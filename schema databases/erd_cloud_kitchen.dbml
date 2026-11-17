@@ -1,0 +1,60 @@
+// ERD - Sistem Pemesanan Cloud Kitchen
+// Tempel isi file ini di https://dbdiagram.io untuk menghasilkan gambar ERD
+
+Project db_cloud_kitchen {
+  database_type: 'MySQL'
+  Note: 'Sistem Pemesanan Cloud Kitchen - 6 tabel (3NF)'
+}
+
+Table Pelanggan {
+  id_pel   varchar(5)  [pk]
+  nama_pel varchar(50) [not null]
+  no_hp    varchar(15) [not null, unique]
+}
+
+Table Driver {
+  id_driver   varchar(5)  [pk]
+  nama_driver varchar(50) [not null]
+  plat_nomor  varchar(15) [not null, unique]
+}
+
+Table Brand {
+  id_brand   varchar(5)  [pk]
+  nama_brand varchar(50) [not null, unique]
+  kategori   varchar(30) [not null]
+}
+
+Table Menu {
+  id_menu   varchar(5)  [pk]
+  id_brand  varchar(5)  [not null, ref: > Brand.id_brand]
+  nama_menu varchar(50) [not null]
+  harga     int         [not null, note: 'CHECK (harga > 0) - harga jual saat ini']
+}
+
+Table Pesanan {
+  no_pesanan   varchar(10)  [pk]
+  tanggal      date         [not null]
+  id_pel       varchar(5)   [not null, ref: > Pelanggan.id_pel]
+  id_driver    varchar(5)   [null, ref: > Driver.id_driver, note: 'NULL = belum ada driver']
+  alamat_kirim varchar(100) [not null]
+  ongkir       int          [not null, default: 0, note: 'CHECK (ongkir >= 0)']
+  status       status_pesanan [not null, default: 'Diproses']
+}
+
+Table Detail_Pesanan {
+  no_pesanan   varchar(10) [not null, ref: > Pesanan.no_pesanan]
+  id_menu      varchar(5)  [not null, ref: > Menu.id_menu]
+  qty          int         [not null, note: 'CHECK (qty > 0)']
+  harga_satuan int         [not null, note: 'harga menu saat transaksi']
+
+  indexes {
+    (no_pesanan, id_menu) [pk]
+  }
+}
+
+Enum status_pesanan {
+  Diproses
+  Dikirim
+  Selesai
+  Dibatalkan
+}
